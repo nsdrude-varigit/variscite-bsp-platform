@@ -1,0 +1,65 @@
+# This is a basic workflow to help you get started with Actions
+
+name: imx8mm-var-dart
+
+env:
+  MACHINE: imx8mm-var-dart
+  BUILD_DIR: build_xwayland
+  DISTRO: fslc-xwayland
+  SETUP_SCRIPT: setup-environment
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the dunfell-actions branch
+  push:
+    branches: [ dunfell-actions ]
+  pull_request:
+    branches: [ dunfell-actions ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: build core-image-minimal
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: core-image-minimal
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
+
+      - name: build fsl-image-gui
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: fsl-image-gui
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
+
+      - name: build fsl-image-qt5
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: fsl-image-qt5
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
