@@ -28,9 +28,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
       - name: build core-image-minimal
         uses: nsdrude-varigit/github-actions@dunfell_v1
         with:
@@ -41,6 +38,7 @@ jobs:
           setup_script: setup-environment
           repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
           repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
 
       - name: Finished
         run: echo finished
