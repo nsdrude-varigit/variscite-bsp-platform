@@ -1,6 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: imx8mn-var-som
+
+env:
+  MACHINE: imx8mn-var-som
+  BUILD_DIR: build_xwayland
+  DISTRO: fslc-xwayland
+  SETUP_SCRIPT: setup-environment
 
 # Controls when the action will run.
 on:
@@ -25,45 +31,46 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Create workspace
-        run: mkdir workdir-${GITHUB_SHA}
-
-      - name: Repo init
+      - name: repo init
         run: |
-          cd workdir-${GITHUB_SHA}
+          mkdir ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
           repo init -u ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/ -b ${GITHUB_SHA}
 
-      - name: Repo sync
+      - name: repo sync
         run: |
-          cd workdir-${GITHUB_SHA}
+          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
           repo sync -j4
 
-      - name: imx8mn Create build directory
+      - name: create build directory
         run: |
-          cd workdir-${GITHUB_SHA}
-          EULA=1 MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
-          sed -i 's/DL_DIR ?= "${BSPDIR}\/downloads/DL_DIR = "\/opt\/yocto_downloads/g' conf/local.conf
+          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+          EULA=1 MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
+          if [ -e /opt/yocto_downloads/ ]; then sed -i 's/DL_DIR ?= "${BSPDIR}\/downloads/DL_DIR = "\/opt\/yocto_downloads/g' conf/local.conf; fi
 
-      - name: imx8mn Build core-image-minimal
+      - name: build core-image-minimal
         run: |
-          cd workdir-${GITHUB_SHA}
-          MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+          MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
           bitbake core-image-minimal
 
-      # - name: imx8mn Build core-image-base
+      # - name: build core-image-base
       #   run: |
-      #     cd workdir-${GITHUB_SHA}
-      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
-      #     bitbake core-image-minimal
+      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
+      #     bitbake core-image-base
 
-      # - name: imx8mn Build fsl-image-gui
+      # - name: build fsl-image-gui
       #   run: |
-      #     cd workdir-${GITHUB_SHA}
-      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
-      #     bitbake core-image-minimal
+      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
+      #     bitbake fsl-image-gui
 
-      # - name: imx8mn Build fsl-image-qt5
+      # - name: build fsl-image-qt5
       #   run: |
-      #     cd workdir-${GITHUB_SHA}
-      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
-      #     bitbake core-image-minimal
+      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
+      #     bitbake fsl-image-qt5
+
+      - name: cleanup
+        run: rm -rf ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
