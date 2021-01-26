@@ -31,46 +31,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: repo init
-        run: |
-          mkdir ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-          repo init -u ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/ -b ${GITHUB_SHA}
-
-      - name: repo sync
-        run: |
-          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-          repo sync -j4
-
-      - name: create build directory
-        run: |
-          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-          EULA=1 MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
-          if [ -e /opt/yocto_downloads/ ]; then sed -i 's/DL_DIR ?= "${BSPDIR}\/downloads/DL_DIR = "\/opt\/yocto_downloads/g' conf/local.conf; fi
-
       - name: build core-image-minimal
-        run: |
-          cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-          MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
-          bitbake core-image-minimal
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: core-image-minimal
+          machine: imx8mn-var-som
+          build_dir: build_xwayland
+          distro: fslc-xwayland
+          setup_script: setup-environment
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
 
-      # - name: build core-image-base
-      #   run: |
-      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
-      #     bitbake core-image-base
-
-      # - name: build fsl-image-gui
-      #   run: |
-      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
-      #     bitbake fsl-image-gui
-
-      # - name: build fsl-image-qt5
-      #   run: |
-      #     cd ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
-      #     MACHINE=${MACHINE} DISTRO=${DISTRO} source ./${SETUP_SCRIPT} ${BUILD_DIR}
-      #     bitbake fsl-image-qt5
-
-      - name: cleanup
-        run: rm -rf ${MACHINE}-${GITHUB_SHA}-${GITHUB_RUN_ID}
+      - name: Finished
+        run: echo finished
