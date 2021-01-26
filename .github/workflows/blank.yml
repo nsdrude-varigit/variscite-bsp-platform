@@ -32,13 +32,34 @@ jobs:
         uses: nsdrude-varigit/github-actions@dunfell_v1
         with:
           image: core-image-minimal
-          machine: imx8mn-var-som
-          build_dir: build_xwayland
-          distro: fslc-xwayland
-          setup_script: setup-environment
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
           repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
           repo_sha: ${GITHUB_SHA}
           sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
 
-      - name: Finished
-        run: echo finished
+      - name: build fsl-image-gui
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: fsl-image-gui
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
+
+      - name: build fsl-image-qt5
+        uses: nsdrude-varigit/github-actions@dunfell_v1
+        with:
+          image: fsl-image-qt5
+          machine: ${MACHINE}
+          build_dir: ${BUILD_DIR}
+          distro: ${DISTRO}
+          setup_script: ${SETUP_SCRIPT}
+          repo_git: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/
+          repo_sha: ${GITHUB_SHA}
+          sstate_cache: ${GITHUB_WORKSPACE}/sstate-cache
