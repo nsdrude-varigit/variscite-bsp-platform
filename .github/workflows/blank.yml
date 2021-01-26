@@ -1,0 +1,69 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the dunfell-actions branch
+  push:
+    branches: [ dunfell-actions ]
+  pull_request:
+    branches: [ dunfell-actions ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Create workspace
+        run: mkdir workdir-${GITHUB_SHA}
+
+      - name: Repo init
+        run: |
+          cd workdir-${GITHUB_SHA}
+          repo init -u ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/ -b ${GITHUB_SHA}
+
+      - name: Repo sync
+        run: |
+          cd workdir-${GITHUB_SHA}
+          repo sync -j4
+
+      - name: imx8mn Create build directory
+        run: |
+          cd workdir-${GITHUB_SHA}
+          EULA=1 MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+          sed -i 's/DL_DIR ?= "${BSPDIR}\/downloads/DL_DIR = "\/opt\/yocto_downloads/g' conf/local.conf
+
+      - name: imx8mn Build core-image-minimal
+        run: |
+          cd workdir-${GITHUB_SHA}
+          MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+          bitbake core-image-minimal
+
+      # - name: imx8mn Build core-image-base
+      #   run: |
+      #     cd workdir-${GITHUB_SHA}
+      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+      #     bitbake core-image-minimal
+
+      # - name: imx8mn Build fsl-image-gui
+      #   run: |
+      #     cd workdir-${GITHUB_SHA}
+      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+      #     bitbake core-image-minimal
+
+      # - name: imx8mn Build fsl-image-qt5
+      #   run: |
+      #     cd workdir-${GITHUB_SHA}
+      #     MACHINE=imx8mn-var-som DISTRO=fslc-xwayland source ./setup-environment build-imx8mn
+      #     bitbake core-image-minimal
